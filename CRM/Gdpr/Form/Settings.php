@@ -11,7 +11,7 @@ class CRM_Gdpr_Form_Settings extends CRM_Core_Form {
   function buildQuickForm() {
 
     CRM_Utils_System::setTitle(ts('GDPR - Settings'));
-
+ // FIXME: 4.4 incompatible temp remove field
     $this->addEntityRef('data_officer', ts('Data Protection Officer (DPO)'), array(
         'create' => TRUE,
         'api' => array('extra' => array('email')),
@@ -26,7 +26,7 @@ class CRM_Gdpr_Form_Settings extends CRM_Core_Form {
       'activity_type',
       ts('Activity Types'),
       array('' => ts('- select -')) + $actTypes, // list of options
-      TRUE,
+   false,//   TRUE,
       array('class' => 'crm-select2 huge', 'multiple' => 'multiple',)
     );
 
