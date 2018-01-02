@@ -10,17 +10,19 @@ use CRM_Gdpr_ExtensionUtil as E;
  */
 function gdpr_civicrm_config(&$config) {
   _gdpr_civix_civicrm_config($config);
-	$cid = CRM_Core_Session::singleton()->getLoggedInContactID();
+  //FIXME: 4.4 incompatible.
+  //$cid = CRM_Core_Session::singleton()->getLoggedInContactID();
+  $cid = CRM_Core_Session::singleton()->get('UserID');
   if ($cid) {
     $session = CRM_Core_Session::singleton();
-    $promptSet = CRM_Gdpr_SLA_Utils::isPromptForAcceptance();
     $key = CRM_Gdpr_SLA_Utils::getPromptFlagSessionKey();
     
-    if ($promptSet && CRM_Gdpr_SLA_Utils::showFormIsFlagged()) {
+    if (CRM_Gdpr_SLA_Utils::showFormIsFlagged()) {
       CRM_Gdpr_SLA_Utils::showForm();
     }
     else {
-      $promptForSLA = $promptSet && CRM_Gdpr_SLA_Utils::isContactDueAcceptance($cid);
+      $promptForSLA = CRM_Gdpr_SLA_Utils::isPromptForAcceptance()
+        && CRM_Gdpr_SLA_Utils::isContactDueAcceptance($cid);
       if ($promptForSLA && !CRM_Gdpr_SLA_Utils::showFormIsUnflagged()) {
         CRM_Gdpr_SLA_Utils::flagShowForm();
       }
