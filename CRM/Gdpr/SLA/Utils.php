@@ -17,6 +17,34 @@ class CRM_Gdpr_SLA_Utils {
   static protected $promptFlagSessionKey = 'Gdpr_SLA_do_prompt';
 
   /**
+   * Get the activity type id for the Acceptance activity.
+   */
+  static protected function getActivityTypeId() {
+    static $id = NULL;
+    if (!$id) {
+      $activityTypeId = 2;
+      $optionGroupParams = array(
+        'sequential' => 1,
+        'name' => 'activity_type',
+      );
+      $optionGroupResult = civicrm_api3('OptionGroup', 'get', $optionGroupParams);
+      if (!empty($optionGroupResult['values'][0])) {
+        $activityTypeId = $optionGroupResult['values'][0]['id'];
+      }
+      $params = array(
+        'sequential' => 1,
+        'name' => self::$activityTypeName,
+        'option_group_id' => 2,
+      );
+      $result = civicrm_api3('OptionValue', 'get', $params);
+      if (!empty($result['values'][0])) {
+        $id = $result['values'][0]['value'];
+      }  
+    }
+    return $id;
+  }
+
+  /**
    * Getter for promptFlagSessionkey.
    */
   static function getPromptFlagSessionKey() {
@@ -106,17 +134,30 @@ EOT;
    * Gets the last SLA Acceptance activity for a contact.
    */
   static function getContactLastAcceptance($contactId) {
-		$result = civicrm_api3('Activity', 'get', array(
-			'sequential' => 1,
-			'activity_type_id' => self::$activityTypeName,
-			'target_contact_id' => $contactId,
-      'options' => array(
-        'sort' => 'activity_date_time asc',
-        'limit' => 1,
-      ),
-		));
+     $activityTypeId = self::getActivityTypeId();
+     // With CiviCRM 4.4:
+     // Cannot use other filters if using contact_id.
+     // Parameter name is contact_id, not (source|target)_contact_id.
+     $params = array(
+       'sequential' => 1,
+       'activity_type_id' => $activityTypeId,
+       // For civiCRM 4.4
+       'contact_id' => $contactId,
+      );
+    $returnActivity = array();
+    $result = civicrm_api3('Activity', 'get', $params);
     if (!empty($result['values'])) {
-      return $result['values'][0];
+      // CiviCRM 4.4 does not filter by activity type id.
+      // Iterate backward through activities and get the most recent
+      // with the correct type.
+      for ($i = $result['count'] - 1; $i >= 0; $i--) {
+        $activity = $result['values'][$i];
+        if ($activity['activity_type_id'] == $activityTypeId) {
+          $returnActivity = $activity;
+          break;
+        }  
+      }
+      return $returnActivity;
     }
   }
 
@@ -200,7 +241,6 @@ EOT;
     }
     $result = civicrm_api3('CustomGroup', 'get', array(
   	  'sequential' => 1,
-      'name' => "SLA_Acceptance",
       'name' => $groupName,
       'api.CustomField.get' => array(
         'custom_group_id' => "\$value.id",
