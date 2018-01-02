@@ -141,6 +141,7 @@ EOT;
       'custom_' . $termsConditionsField['id'] => $termsConditionsUrl,
     );
     $result = civicrm_api3('Activity', 'create', $params);
+    self::unflagShowForm();
   }
 
   static function isContactDueAcceptance($contactId = NULL) {
