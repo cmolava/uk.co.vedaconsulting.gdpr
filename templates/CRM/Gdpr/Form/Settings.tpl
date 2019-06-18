@@ -359,9 +359,11 @@
 	if (privacyOptionValue == 2) {
 		$('#sla_tc_upload').parent().parent().hide();
 		$('#sla_tc_link').parent().parent().show();
+		versionChk.show();
 	} else { // Default File upload
 		$('#sla_tc_upload').parent().parent().show();
 		$('#sla_tc_link').parent().parent().hide();
+		versionChk.hide();
 	}
 
 	var termsAndConditionsValue = $('input[name=entity_tc_option]:checked').val();
