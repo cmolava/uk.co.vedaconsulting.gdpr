@@ -294,7 +294,7 @@ class CRM_Gdpr_Form_Settings extends CRM_Core_Form {
   function postProcess() {
     $values = $this->exportValues();
 
-    $settings = array();
+    $settings = CRM_Gdpr_Utils::getGDPRSettings();
     $settings['data_officer'] = $values['data_officer'];
     $settings['activity_type'] = $values['activity_type'];
     $settings['activity_period'] = $values['activity_period'];
